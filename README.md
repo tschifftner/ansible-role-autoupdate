@@ -38,7 +38,7 @@ None.
 
     - hosts: server
       roles:
-        - { role: tschifftner.ansible-role-autoupdate }
+        - { role: tschifftner.autoupdate }
 
 ## License
 

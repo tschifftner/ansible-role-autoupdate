@@ -1,0 +1,23 @@
+---
+dependencies: []
+
+galaxy_info:
+  author: Tobias Schifftner
+  description: Installs autoupdate packages on Debian/Ubuntu linux servers. This allows to run unattended and periodic updates.
+  company: ambimax® GmbH
+  license: MIT
+  min_ansible_version: 2.1
+  platforms:
+  - name: Debian
+    versions:
+    - jessie
+  - name: Ubuntu
+    versions:
+    - trusty
+  galaxy_tags:
+    - debian
+    - ubuntu
+    - autoupdate
+    - unattended
+    - periodic
+    - updates
