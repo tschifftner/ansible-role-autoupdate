@@ -1,12 +1,21 @@
 ---
 - name: Install unattended upgrades packages.
-  apt: name={{ item }} state=present
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+    cache_valid_time: 86400
   with_items:
     - unattended-upgrades
     - apt-listchanges
 
 - name: Copy unattended-upgrades configuration files.
-  template: src="../templates/{{ item }}" dest="/etc/apt/apt.conf.d/{{ item }}" owner=root group=root mode=0644
+  template:
+    src: "../templates/{{ item }}"
+    dest: "/etc/apt/apt.conf.d/{{ item }}"
+    owner: root
+    group: root
+    mode: 0644
   with_items:
     - 10periodic
     - 50unattended-upgrades

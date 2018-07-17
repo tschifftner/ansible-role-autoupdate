@@ -1,43 +1,41 @@
 ---
-language: python
-python: "2.7"
+services: docker
 
 env:
-  - SITE=test.yml
+#  - distro: centos7
+#  - distro: centos6
+#  - distro: fedora27
+#  - distro: ubuntu1604
+#  - distro: ubuntu1404
+#  - distro: ubuntu1204
 
-before_install:
-  - sudo apt-get update -qq
-
-install:
-  # Install Ansible.
-  - pip install ansible
-
-  # Add ansible.cfg to pick up roles path.
-  - "{ echo '[defaults]'; echo 'roles_path = ../'; } >> ansible.cfg"
-
-  # Install ansible-lint
-  - pip install ansible-lint
+  - distro: debian9
+  - distro: debian8
+  - distro: ubuntu1804
+  - distro: ubuntu1604
 
 script:
-  # Check the role/playbook's syntax.
-  - "ansible-playbook -i tests/inventory tests/$SITE --syntax-check"
+  # Configure test script so we can run extra tests after playbook is run.
+  - export container_id=$(date +%s)
+  - export cleanup=false
+  - export DOCKER="docker exec --tty ${container_id} env TERM=xterm"
 
-  # Run the role/playbook with ansible-playbook.
-  - "ansible-playbook -i tests/inventory tests/$SITE --connection=local --sudo"
+  # Download test shim.
+  - wget -O ${PWD}/tests/test.sh https://gist.githubusercontent.com/tschifftner/4078cf2a8429d967d5e100649ff2caa9/raw/
+  - chmod +x ${PWD}/tests/test.sh
 
-  # Run the role/playbook again, checking to make sure it's idempotent.
-  - >
-    ansible-playbook -i tests/inventory tests/$SITE --connection=local --sudo
-    | grep -q 'changed=0.*failed=0'
-    && (echo 'Idempotence test: pass' && exit 0)
-    || (echo 'Idempotence test: fail' && exit 1)
+  # Run tests.
+  - ${PWD}/tests/test.sh
 
-  # ansible-lint checks for best practice
-  - ansible-lint tests/$SITE
+  # Ensure config files are present
+  - ${DOCKER} test -e /etc/apt/apt.conf.d/10periodic
+  - ${DOCKER} test -e /etc/apt/apt.conf.d/50unattended-upgrades
 
 after_failure:
-  - ansible --version
-  - ansible -i 127.0.0.1, -m setup all -c local
+  - ${DOCKER} ls -la /etc/cron.d/
+  - ${DOCKER} cat /etc/cron.d/composer
+  - ${DOCKER} crontab -l
 
 notifications:
   slack: ambimax:2MlPTX9bY9aPxCPhJGxHKIT6
+  webhooks: https://galaxy.ansible.com/api/v1/notifications/
